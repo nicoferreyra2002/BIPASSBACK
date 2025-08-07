@@ -1,22 +1,28 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infraestructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
+        private readonly ApplicationDbContext _dbContext;
+
+        public UserRepository(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public async Task<IEnumerable<User>> GetAllAsync()
         {
-            return await Task.FromResult(new List<User>
-            {
-                new User { Id = 1, Name = "Juan", Email = "juan@bipass.com" },
-                new User { Id = 2, Name = "Ana", Email = "ana@bipass.com" }
-            });
+            return await _dbContext.Users.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<User> AddAsync(User user)
+        {
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+            return user;
         }
     }
 }
