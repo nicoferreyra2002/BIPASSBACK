@@ -1,5 +1,6 @@
 using Domain.Interfaces;
 using Infraestructure.Repositories;
+using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 
 var app = builder.Build();
+
+string connectionString = builder.Configuration["ConnectionStrings:BipassDBConnectionString"]!;
+
+// Configure the SQLite connection
+var connection = new SqliteConnection(connectionString);
+
+
+connection.Open();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

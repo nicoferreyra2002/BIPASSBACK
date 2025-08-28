@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +11,33 @@ namespace Infraestructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        public async Task<IEnumerable<User>> GetAllAsync()
+        private readonly BipassDbContext _dbContext;
+
+        public UserRepository(BipassDbContext dbContext)
         {
-            return await Task.FromResult(new List<User>
+            _dbContext = dbContext;
+        }
+
+        public async Task<User?> GetUser(string email, string password)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
+            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
-                new User { Id = 1, Name = "Juan", Email = "juan@bipass.com" },
-                new User { Id = 2, Name = "Ana", Email = "ana@bipass.com" }
-            });
+                return user;
+            }
+            return null;
+        }
+
+        public async Task<User> CreateUser(User user)
+        {
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
         }
     }
 }
